@@ -14,11 +14,22 @@ const { uploadImage } = require("../../shared/services/imagekit.service");
 const { sendOTP } = require("../../shared/services/email.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const errorFactory = require("../../shared/error/errorFactory");
 const crypto = require("crypto");
 
 const register = async (req, res) => {
   try {
-    let { firstName, lastName, email, password, confirmPassword, phone, idNumber, lang, permission } = req.body;
+    let {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      phone,
+      idNumber,
+      lang,
+      permission,
+    } = req.body;
 
     firstName = firstName?.trim();
     lastName = lastName?.trim();
@@ -30,7 +41,15 @@ const register = async (req, res) => {
     lang = lang?.trim();
     permission = permission?.trim();
 
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !phone || !idNumber) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !phone ||
+      !idNumber
+    ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -47,9 +66,12 @@ const register = async (req, res) => {
 
     try {
       if (req.files) {
-        console.log("   Field names:", Array.isArray(req.files)
-          ? req.files.map(f => f.fieldname).join(", ")
-          : Object.keys(req.files).join(", "));
+        console.log(
+          "   Field names:",
+          Array.isArray(req.files)
+            ? req.files.map((f) => f.fieldname).join(", ")
+            : Object.keys(req.files).join(", "),
+        );
       }
 
       // Build file map from req.files
@@ -57,12 +79,12 @@ const register = async (req, res) => {
       if (req.files) {
         if (Array.isArray(req.files)) {
           // If multer returns array format
-          req.files.forEach(file => {
+          req.files.forEach((file) => {
             filesMap[file.fieldname] = file;
           });
         } else {
           // If multer returns object format
-          Object.keys(req.files).forEach(key => {
+          Object.keys(req.files).forEach((key) => {
             const fileArray = req.files[key];
             if (Array.isArray(fileArray)) {
               filesMap[key] = fileArray[0];
@@ -74,28 +96,40 @@ const register = async (req, res) => {
       }
 
       if (filesMap.idImageFront) {
-        idImageFrontUrl = await uploadImage(filesMap.idImageFront.buffer, `id_front_${email}_${Date.now()}`);
+        idImageFrontUrl = await uploadImage(
+          filesMap.idImageFront.buffer,
+          `id_front_${email}_${Date.now()}`,
+        );
       } else {
         idImageFrontUrl = `https://via.placeholder.com/400x300?text=ID+Front`;
         console.log("No idImageFront provided, using placeholder");
       }
 
       if (filesMap.idImageBack) {
-        idImageBackUrl = await uploadImage(filesMap.idImageBack.buffer, `id_back_${email}_${Date.now()}`);
+        idImageBackUrl = await uploadImage(
+          filesMap.idImageBack.buffer,
+          `id_back_${email}_${Date.now()}`,
+        );
       } else {
         idImageBackUrl = `https://via.placeholder.com/400x300?text=ID+Back`;
         console.log("No idImageBack provided, using placeholder");
       }
 
       if (filesMap.idImageSelfie) {
-        idImageSelfieUrl = await uploadImage(filesMap.idImageSelfie.buffer, `id_selfie_${email}_${Date.now()}`);
+        idImageSelfieUrl = await uploadImage(
+          filesMap.idImageSelfie.buffer,
+          `id_selfie_${email}_${Date.now()}`,
+        );
       } else {
         idImageSelfieUrl = `https://via.placeholder.com/400x300?text=ID+Selfie`;
         console.log("No idImageSelfie provided, using placeholder");
       }
 
       if (filesMap.profileImage) {
-        profileImageUrl = await uploadImage(filesMap.profileImage.buffer, `profile_${email}_${Date.now()}`);
+        profileImageUrl = await uploadImage(
+          filesMap.profileImage.buffer,
+          `profile_${email}_${Date.now()}`,
+        );
       } else {
         profileImageUrl = `https://via.placeholder.com/400x300?text=Profile+Image`;
       }
@@ -103,7 +137,9 @@ const register = async (req, res) => {
       console.log("All images processed successfully");
     } catch (error) {
       console.error("Image upload error:", error.message);
-      return res.status(500).json({ message: "Image upload failed", error: error.message });
+      return res
+        .status(500)
+        .json({ message: "Image upload failed", error: error.message });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -130,9 +166,10 @@ const register = async (req, res) => {
     await sendOTP(email, otp);
 
     res.status(201).json({
-      message: "User registered successfully. Please verify your email with OTP.",
+      message:
+        "User registered successfully. Please verify your email with OTP.",
       userId: user._id,
-      email: user.email
+      email: user.email,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -145,7 +182,8 @@ const verifyOTP = async (req, res) => {
 
   const otpRecord = await otpRepo.findByEmailAndOtp(email, otp);
   if (!otpRecord) {
-    return res.status(400).json({ message: "Invalid or expired OTP" });
+    // return res.status(400).json({ message: "Invalid or expired OTP" });
+    errorFactory.badRequest("Invalid or expired OTP", "otp");
   }
 
   // Mark user as verified
@@ -157,14 +195,35 @@ const verifyOTP = async (req, res) => {
   await userRepo.updateById(user._id, { isVerified: true });
   await otpRepo.deleteByEmail(email);
 
-  res.status(200).json({ message: "Email verified successfully. Please add your address." });
+  res
+    .status(200)
+    .json({ message: "Email verified successfully. Please add your address." });
 };
 
 const updateLocation = async (req, res) => {
-  const { userId, governorateId, areaId, streetName, apartment, floorNumber, buildingNumber, additionalDetails } = req.body;
+  const {
+    userId,
+    governorateId,
+    areaId,
+    streetName,
+    apartment,
+    floorNumber,
+    buildingNumber,
+    additionalDetails,
+  } = req.body;
 
-  if (!userId || !governorateId || !areaId || !streetName || !apartment || !floorNumber || !buildingNumber) {
-    return res.status(400).json({ message: "Missing required location fields" });
+  if (
+    !userId ||
+    !governorateId ||
+    !areaId ||
+    !streetName ||
+    !apartment ||
+    !floorNumber ||
+    !buildingNumber
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Missing required location fields" });
   }
 
   const location = await locationRepo.create({
@@ -284,7 +343,9 @@ const requestChangePassword = async (req, res) => {
     const otp = crypto.randomInt(100000, 999999).toString();
     await otpRepo.create({ email: req.user.email, otp });
     await sendOTP(req.user.email, otp);
-    res.status(200).json({ message: "OTP sent to your email for password change" });
+    res
+      .status(200)
+      .json({ message: "OTP sent to your email for password change" });
   } catch (error) {
     console.error("Request change password error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -336,7 +397,9 @@ const forgotPassword = async (req, res) => {
     await otpRepo.create({ email, otp });
     await sendOTP(email, otp);
 
-    res.status(200).json({ message: "OTP sent to your email for password reset" });
+    res
+      .status(200)
+      .json({ message: "OTP sent to your email for password reset" });
   } catch (error) {
     console.error("Forgot password error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -361,7 +424,10 @@ const resetPassword = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await userRepo.updateById(otpRecord.userId || (await userRepo.findByEmail(email))._id, { password: hashedPassword });
+    await userRepo.updateById(
+      otpRecord.userId || (await userRepo.findByEmail(email))._id,
+      { password: hashedPassword },
+    );
     await otpRepo.deleteByEmail(email);
 
     res.status(200).json({ message: "Password reset successfully" });
@@ -388,11 +454,29 @@ const login = async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials" });
   }
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "7d",
+  });
 
   res.status(200).json({ message: "Login successful", token });
 };
 const getMe = async (req, res) => {
   res.status(200).json({ user: req.user });
 };
-module.exports = { register, verifyOTP, updateLocation, login, getMe, getUsers, getUserById, updateUserById, deleteUserById, updateMe, deleteMe, requestChangePassword, changePassword, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  verifyOTP,
+  updateLocation,
+  login,
+  getMe,
+  getUsers,
+  getUserById,
+  updateUserById,
+  deleteUserById,
+  updateMe,
+  deleteMe,
+  requestChangePassword,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+};
