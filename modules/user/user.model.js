@@ -1,17 +1,28 @@
 const mongoose = require("mongoose");
-const schemaConfig = require("../../shared/schemaConfig");
+const {
+  userNameConfig,
+  languageConfig,
+  emailConfig,
+  egyptianPhoneConfig,
+  passwordConfig,
+  idNumberConfig,
+  permissionConfig,
+  locationConfig,
+  isPartnerConfig,
+  isVerifiedConfig,
+} = require("../../shared/schemaConfig");
 const userSchema = new mongoose.Schema({
-  lastName: { ...schemaConfig.userName },
-  firstName: { ...schemaConfig.userName },
-  language: { ...schemaConfig.language },
-  email: { ...schemaConfig.email },
-  phone: { ...schemaConfig.egyptianPhone },
-  password: { ...schemaConfig.password },
-  idNumber: { ...schemaConfig.idNumber },
-  permission: { ...schemaConfig.permission },
-  location: { ...schemaConfig.location },
-  isPartner: { ...schemaConfig.isPartner },
-  isVerified: { ...schemaConfig.isVerified },
+  lastName: { ...userNameConfig },
+  firstName: { ...userNameConfig },
+  language: { ...languageConfig },
+  email: { ...emailConfig },
+  phone: { ...egyptianPhoneConfig },
+  password: { ...passwordConfig },
+  idNumber: { ...idNumberConfig },
+  permission: { ...permissionConfig },
+  location: { ...locationConfig },
+  isPartner: { ...isPartnerConfig },
+  isVerified: { ...isVerifiedConfig },
   profileImage: String,
   idImageFront: {
     type: String,
@@ -27,4 +38,4 @@ const userSchema = new mongoose.Schema({
   },
 });
 const User = mongoose.model("User", userSchema);
-module.exports = User
+module.exports = User;

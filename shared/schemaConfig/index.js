@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const constants = require("../constants");
+const { LANGUAGES, PERMISSIONS } = require("../constants");
 
-const userName = {
+const userNameConfig = {
   type: String,
   required: true,
   trim: true,
@@ -9,11 +9,11 @@ const userName = {
   minLength: 3,
   maxLength: 20,
 };
-const language = {
+const languageConfig = {
   type: String,
-  enum: constants.languages.list,
+  enum: LANGUAGES.LIST,
 };
-const email = {
+const emailConfig = {
   type: String,
   required: true,
   unique: true,
@@ -21,54 +21,50 @@ const email = {
   trim: true,
   match: /^[A-Za-z]+[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
 };
-const egyptianPhone = {
+const egyptianPhoneConfig = {
   type: String,
   required: true,
   trim: true,
   match: /^01[0125][0-9]{8}$/,
 };
-const password = {
+const passwordConfig = {
   type: String,
   required: true,
   trim: true,
 };
-const idNumber = {
+const idNumberConfig = {
   type: String,
   required: true,
   trim: true,
   match: /^\d{14}$/, // 14 digits
 };
-const permission = {
+const permissionConfig = {
   type: String,
-  enum: constants.permissions.list,
+  enum: PERMISSIONS.LIST,
 };
-const location = {
+const locationConfig = {
   type: mongoose.Schema.Types.ObjectId,
   ref: 'Location',
 };
-const isPartner = {
+const isPartnerConfig = {
   type: Boolean,
   default: false,
 };
-const isVerified = {
+const isVerifiedConfig = {
   type: Boolean,
   default: false,
 };
-const permession = {
-  type: String,
-  enum: constants.permissions.list,
+
+
+module.exports = {
+  userNameConfig,
+  languageConfig,
+  emailConfig,
+  egyptianPhoneConfig,
+  passwordConfig,
+  idNumberConfig,
+  permissionConfig,
+  locationConfig,
+  isPartnerConfig,
+  isVerifiedConfig,
 };
-const schemaConfig = {
-  userName,
-  language,
-  email,
-  egyptianPhone,
-  password,
-  idNumber,
-  permission,
-  location,
-  isPartner,
-  isVerified,
-  permession,
-};
-module.exports = schemaConfig;

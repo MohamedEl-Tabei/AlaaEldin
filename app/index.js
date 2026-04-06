@@ -2,10 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const userRouter = require("../modules/user/user.route");
 const locationRouter = require("../modules/location/location.route");
-const constants = require("../shared/constants");
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-
+const { BASE_URL } = require("../shared/constants");
+const errorMiddleware =require("../shared/middlewares/error.middleware")
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -47,7 +47,9 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use(`${constants.baseURL}/user`, userRouter);
-app.use(`${constants.baseURL}/location`, locationRouter);
+app.use(`${BASE_URL}/user`, userRouter);
+app.use(`${BASE_URL}/location`, locationRouter);
+
+app.use(errorMiddleware);
 
 module.exports = app;

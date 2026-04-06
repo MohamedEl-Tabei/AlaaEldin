@@ -1,17 +1,9 @@
-// const express=require("express")
-// const controller= require("./user.controller")
-// const router=express.Router()
-// router.route("/test").get(controller.test)
-
-
-
-// module.exports=router
-
-
 const express = require("express");
 const controller = require("./user.controller");
 const { uploadFields } = require("../../shared/middlewares/upload.middleware");
 const { authGuard } = require("../../shared/middlewares/auth.middleware.js");
+const validate = require("../../shared/middlewares/errorValidate.middleware.js");
+const { registerSchema } = require("./user.validation.js");
 const router = express.Router();
 
 /**
@@ -26,14 +18,7 @@ const router = express.Router();
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required:
- *               - firstName
- *               - lastName
- *               - email
- *               - password
- *               - confirmPassword
- *               - phone
- *               - idNumber
+ *
  *             properties:
  *               firstName:
  *                 type: string
@@ -76,7 +61,12 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/register", uploadFields, controller.register);
+router.post(
+  "/register",
+  uploadFields,
+  validate(registerSchema),
+  controller.register,
+);
 
 /**
  * @swagger
@@ -212,7 +202,11 @@ router.post("/login", controller.login);
  *       500:
  *         description: Server error
  */
-router.post("/change-password-request", authGuard, controller.requestChangePassword);
+router.post(
+  "/change-password-request",
+  authGuard,
+  controller.requestChangePassword,
+);
 
 /**
  * @swagger
