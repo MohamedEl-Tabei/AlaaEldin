@@ -7,19 +7,24 @@ const userSchema = new mongoose.Schema({
   email: { ...schemaConfig.email },
   phone: { ...schemaConfig.egyptianPhone },
   password: { ...schemaConfig.password },
+  idNumber: { ...schemaConfig.idNumber },
+  permission: { ...schemaConfig.permission },
+  location: { ...schemaConfig.location },
+  isPartner: { ...schemaConfig.isPartner },
+  isVerified: { ...schemaConfig.isVerified },
   profileImage: String,
   idImageFront: {
     type: String,
-    require: true,
+    required: true,
   },
   idImageBack: {
     type: String,
-    require: true,
+    required: true,
   },
   idImageSelfie: {
     type: String,
-    require: true,
+    required: true,
   },
 });
 const User = mongoose.model("User", userSchema);
-module.exports=User
+module.exports = User
