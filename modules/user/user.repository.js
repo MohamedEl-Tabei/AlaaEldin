@@ -29,11 +29,20 @@ const findAll = async () => {
 };
 
 const updateById = async (id, data) => {
-  return await User.findByIdAndUpdate(id, data, { new: true }).select("-password");
+  return await User.findByIdAndUpdate(id, data, { new: true }).select(
+    "-password",
+  );
 };
 
 const deleteById = async (id) => {
   return await User.findByIdAndDelete(id);
 };
 
-module.exports = { create, findByEmail, findById, findAll, updateById, deleteById };
+module.exports = {
+  create,
+  findByEmail,
+  findById,
+  findAll,
+  updateById,
+  deleteById,
+};

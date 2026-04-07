@@ -1,15 +1,6 @@
-// const userRepo=require("./user.repository.js")
-// const test = async (req, res) => {
-//     await res.status(200).json({
-//         message:"test"
-//     })
-// };
-
-// module.exports = {test};
-
 const userRepo = require("./user.repository");
 const locationRepo = require("../location/location.repository");
-const otpRepo = require("../../shared/otp.repository");
+const otpRepo = require("../../shared/otp/otp.repository");
 const { uploadImage } = require("../../shared/services/imagekit.service");
 const { sendOTP } = require("../../shared/services/email.service");
 const bcrypt = require("bcrypt");
@@ -18,179 +9,182 @@ const errorFactory = require("../../shared/error/errorFactory");
 const crypto = require("crypto");
 
 const register = async (req, res) => {
-  try {
-    let {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-      phone,
-      idNumber,
-      lang,
-      permission,
-    } = req.body;
+  //#region body
+  let {
+    firstName,
+    lastName,
+    email,
+    password,
+    confirmPassword,
+    phone,
+    idNumber,
+    lang,
+    permission,
+  } = req.body;
+  let idImageFrontUrl, idImageBackUrl, idImageSelfieUrl, profileImageUrl;
 
-    firstName = firstName?.trim();
-    lastName = lastName?.trim();
-    email = email?.trim();
-    password = password?.trim();
-    confirmPassword = confirmPassword?.trim();
-    phone = phone?.trim();
-    idNumber = idNumber?.trim();
-    lang = lang?.trim();
-    permission = permission?.trim();
+  firstName = firstName?.trim();
+  lastName = lastName?.trim();
+  email = email?.trim();
+  password = password?.trim();
+  confirmPassword = confirmPassword?.trim();
+  phone = phone?.trim();
+  idNumber = idNumber?.trim();
+  lang = lang?.trim();
+  permission = permission?.trim();
+  //#endregion
+  //#region validation
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !password ||
+    !confirmPassword ||
+    !phone ||
+    !idNumber
+  )
+    errorFactory.badRequest("Missing required fields");
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !password ||
-      !confirmPassword ||
-      !phone ||
-      !idNumber
-    ) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+  if (password !== confirmPassword)
+    errorFactory.badRequest("Passwords do not match", "confirmPassword");
 
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
-    }
-
-    const existingUser = await userRepo.findByEmail(email);
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
-    let idImageFrontUrl, idImageBackUrl, idImageSelfieUrl, profileImageUrl;
-
-    try {
-      if (req.files) {
-        console.log(
-          "   Field names:",
-          Array.isArray(req.files)
-            ? req.files.map((f) => f.fieldname).join(", ")
-            : Object.keys(req.files).join(", "),
-        );
-      }
-
-      // Build file map from req.files
-      const filesMap = {};
-      if (req.files) {
-        if (Array.isArray(req.files)) {
-          // If multer returns array format
-          req.files.forEach((file) => {
-            filesMap[file.fieldname] = file;
-          });
-        } else {
-          // If multer returns object format
-          Object.keys(req.files).forEach((key) => {
-            const fileArray = req.files[key];
-            if (Array.isArray(fileArray)) {
-              filesMap[key] = fileArray[0];
-            } else {
-              filesMap[key] = fileArray;
-            }
-          });
-        }
-      }
-
-      if (filesMap.idImageFront) {
-        idImageFrontUrl = await uploadImage(
-          filesMap.idImageFront.buffer,
-          `id_front_${email}_${Date.now()}`,
-        );
-      } else {
-        idImageFrontUrl = `https://via.placeholder.com/400x300?text=ID+Front`;
-        console.log("No idImageFront provided, using placeholder");
-      }
-
-      if (filesMap.idImageBack) {
-        idImageBackUrl = await uploadImage(
-          filesMap.idImageBack.buffer,
-          `id_back_${email}_${Date.now()}`,
-        );
-      } else {
-        idImageBackUrl = `https://via.placeholder.com/400x300?text=ID+Back`;
-        console.log("No idImageBack provided, using placeholder");
-      }
-
-      if (filesMap.idImageSelfie) {
-        idImageSelfieUrl = await uploadImage(
-          filesMap.idImageSelfie.buffer,
-          `id_selfie_${email}_${Date.now()}`,
-        );
-      } else {
-        idImageSelfieUrl = `https://via.placeholder.com/400x300?text=ID+Selfie`;
-        console.log("No idImageSelfie provided, using placeholder");
-      }
-
-      if (filesMap.profileImage) {
-        profileImageUrl = await uploadImage(
-          filesMap.profileImage.buffer,
-          `profile_${email}_${Date.now()}`,
-        );
-      } else {
-        profileImageUrl = `https://via.placeholder.com/400x300?text=Profile+Image`;
-      }
-
-      console.log("All images processed successfully");
-    } catch (error) {
-      console.error("Image upload error:", error.message);
-      return res
-        .status(500)
-        .json({ message: "Image upload failed", error: error.message });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await userRepo.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      phone,
-      idNumber,
-      language: lang || "ar",
-      permission: permission || "service",
-      profileImage: profileImageUrl,
-      idImageFront: idImageFrontUrl,
-      idImageBack: idImageBackUrl,
-      idImageSelfie: idImageSelfieUrl,
-      isVerified: false,
-    });
-
-    // Generate and send OTP
-    const otp = crypto.randomInt(100000, 999999).toString();
-    await otpRepo.create({ email, otp });
-    await sendOTP(email, otp);
-
-    res.status(201).json({
-      message:
-        "User registered successfully. Please verify your email with OTP.",
-      userId: user._id,
-      email: user.email,
-    });
-  } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+  const existingUser = await userRepo.findByEmail(email);
+  if (existingUser) errorFactory.conflict("Email already exists", "email");
+  //#endregion
+  //#region test
+  if (req.files) {
+    console.log(
+      "   Field names:",
+      Array.isArray(req.files)
+        ? req.files.map((f) => f.fieldname).join(", ")
+        : Object.keys(req.files).join(", "),
+    );
   }
+  //#endregion
+  //#region  files
+  // Build file map from req.files
+  const filesMap = {};
+  if (req.files) {
+    if (Array.isArray(req.files)) {
+      // If multer returns array format
+      req.files.forEach((file) => {
+        filesMap[file.fieldname] = file;
+      });
+    } else {
+      // If multer returns object format
+      Object.keys(req.files).forEach((key) => {
+        const fileArray = req.files[key];
+        if (Array.isArray(fileArray)) {
+          filesMap[key] = fileArray[0];
+        } else {
+          filesMap[key] = fileArray;
+        }
+      });
+    }
+  }
+
+  if (filesMap.idImageFront) {
+    idImageFrontUrl = await uploadImage(
+      filesMap.idImageFront.buffer,
+      `id_front_${email}_${Date.now()}`,
+    );
+  } else {
+    // idImageFrontUrl = `https://via.placeholder.com/400x300?text=ID+Front`;
+    errorFactory.badRequest(
+      "idImageFront is not allowed to be empty",
+      "idImageFront",
+    );
+    console.log("No idImageFront provided, using placeholder");
+  }
+
+  if (filesMap.idImageBack) {
+    idImageBackUrl = await uploadImage(
+      filesMap.idImageBack.buffer,
+      `id_back_${email}_${Date.now()}`,
+    );
+  } else {
+    // idImageBackUrl = `https://via.placeholder.com/400x300?text=ID+Back`;
+    errorFactory.badRequest(
+      "idImageBack is not allowed to be empty",
+      "idImageBack",
+    );
+
+    console.log("No idImageBack provided, using placeholder");
+  }
+
+  if (filesMap.idImageSelfie) {
+    idImageSelfieUrl = await uploadImage(
+      filesMap.idImageSelfie.buffer,
+      `id_selfie_${email}_${Date.now()}`,
+    );
+  } else {
+    // idImageSelfieUrl = `https://via.placeholder.com/400x300?text=ID+Selfie`;
+    errorFactory.badRequest(
+      "idImageSelfie is not allowed to be empty",
+      "idImageSelfie",
+    );
+
+    console.log("No idImageSelfie provided, using placeholder");
+  }
+
+  if (filesMap.profileImage) {
+    profileImageUrl = await uploadImage(
+      filesMap.profileImage.buffer,
+      `profile_${email}_${Date.now()}`,
+    );
+  } else {
+    profileImageUrl = `https://via.placeholder.com/400x300?text=Profile+Image`;
+  }
+
+  console.log("All images processed successfully");
+  //#endregion
+  //#region create user
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await userRepo.create({
+    firstName,
+    lastName,
+    email,
+    password: hashedPassword,
+    phone,
+    idNumber,
+    language: lang || "ar",
+    permission: permission || "service",
+    profileImage: profileImageUrl,
+    idImageFront: idImageFrontUrl,
+    idImageBack: idImageBackUrl,
+    idImageSelfie: idImageSelfieUrl,
+    isVerified: false,
+  });
+  //#endregion
+  //#region Generate and send OTP
+  const otp = crypto.randomInt(100000, 999999).toString();
+  await otpRepo.create({ email, otp });
+  await sendOTP(email, otp);
+  //#endregion
+  res.status(201).json({
+    message: "User registered successfully. Please verify your email with OTP.",
+    userId: user._id,
+    email: user.email,
+  });
 };
 
 const verifyOTP = async (req, res) => {
+  //#region body
   const { email, otp } = req.body;
-
+  //#endregion
   const otpRecord = await otpRepo.findByEmailAndOtp(email, otp);
+  //#region  Validation
   if (!otpRecord) {
-    // return res.status(400).json({ message: "Invalid or expired OTP" });
     errorFactory.badRequest("Invalid or expired OTP", "otp");
   }
 
   // Mark user as verified
   const user = await userRepo.findByEmail(email);
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    errorFactory.notFound("Email not found", "email");
   }
+  //#endregion
 
   await userRepo.updateById(user._id, { isVerified: true });
   await otpRepo.deleteByEmail(email);
@@ -306,18 +300,16 @@ const deleteUserById = async (req, res) => {
 };
 
 const updateMe = async (req, res) => {
-  try {
-    const updateData = { ...req.body };
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
-    }
+  const updateData = {
+    ...req.body,
+    password: undefined,
+  };
+  // if (updateData.password) {
+  //   updateData.password = await bcrypt.hash(updateData.password, 10);
+  // }
 
-    const user = await userRepo.updateById(req.user._id, updateData);
-    res.status(200).json({ message: "Profile updated successfully", user });
-  } catch (error) {
-    console.error("Update me error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
+  const user = await userRepo.updateById(req.user._id, updateData);
+  res.status(200).json({ message: "Profile updated successfully", user });
 };
 
 const deleteMe = async (req, res) => {
@@ -438,22 +430,24 @@ const resetPassword = async (req, res) => {
 };
 
 const login = async (req, res) => {
+  //#region body
   const { email, password } = req.body;
-
+  //#endregion
   const user = await userRepo.findByEmail(email);
+  //#region validation
   if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    errorFactory.unauthorized("Invalid email or password");
   }
 
   if (!user.isVerified) {
-    return res.status(403).json({ message: "Please verify your email first" });
+    errorFactory.forbidden("Please verify your email first");
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    return res.status(401).json({ message: "Invalid credentials" });
+    errorFactory.unauthorized("Invalid email or password");
   }
-
+  //#endregion
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
