@@ -44,8 +44,9 @@ const permissionConfig = {
 };
 const locationConfig = {
   type: mongoose.Schema.Types.ObjectId,
-  ref: 'Location',
+  ref: "Location",
 };
+
 const isPartnerConfig = {
   type: Boolean,
   default: false,
@@ -54,7 +55,6 @@ const isVerifiedConfig = {
   type: Boolean,
   default: false,
 };
-
 
 module.exports = {
   userNameConfig,

@@ -36,6 +36,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  avgRating: {
+    type: Number,
+    default: 0,
+  },
+  countReviews: {
+    type: Number,
+    default: 0,
+  },
 });
 const User = mongoose.model("User", userSchema);
 module.exports = User;

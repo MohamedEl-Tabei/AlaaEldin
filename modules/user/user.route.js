@@ -3,14 +3,19 @@ const controller = require("./user.controller");
 const { uploadFields } = require("../../shared/middlewares/upload.middleware");
 const { authGuard } = require("../../shared/middlewares/auth.middleware.js");
 const validate = require("../../shared/middlewares/errorValidate.middleware.js");
-const { registerSchema } = require("./user.validation.js");
+const {
+  registerSchema,
+  verifyOTPSchema,
+  loginSchema,
+  updateMeSchema,
+} = require("./user.validation.js");
 const router = express.Router();
 
 /**
  * @swagger
  * /api/v1/user/register:
  *   post:
- *     summary: Register a new user
+ *     summary: 👍 Register a new user
  *     tags: [User]
  *     requestBody:
  *       required: true
@@ -22,19 +27,27 @@ const router = express.Router();
  *             properties:
  *               firstName:
  *                 type: string
+ *                 example: mohamed
  *               lastName:
  *                 type: string
+ *                 example: ali
+ *
  *               email:
  *                 type: string
  *                 format: email
+ *                 example:
  *               password:
  *                 type: string
+ *                 example: 12345Aa$
  *               confirmPassword:
  *                 type: string
+ *                 example: 12345Aa$
  *               phone:
  *                 type: string
+ *                 example: 01501201011
  *               idNumber:
  *                 type: string
+ *                 example: 20908264937854
  *               lang:
  *                 type: string
  *                 enum: [ar, en]
@@ -55,7 +68,7 @@ const router = express.Router();
  *                 format: binary
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User registered successfully. OTP sent to email for verification.
  *       400:
  *         description: Bad request
  *       500:
@@ -72,7 +85,7 @@ router.post(
  * @swagger
  * /api/v1/user/verify-otp:
  *   post:
- *     summary: Verify OTP for email verification
+ *     summary: 👍 Verify OTP for email verification
  *     tags: [User]
  *     requestBody:
  *       required: true
@@ -91,13 +104,13 @@ router.post(
  *                 type: string
  *     responses:
  *       200:
- *         description: Email verified successfully
+ *         description: Email verified successfully -> Add location
  *       400:
  *         description: Invalid OTP
  *       500:
  *         description: Server error
  */
-router.post("/verify-otp", controller.verifyOTP);
+router.post("/verify-otp", validate(verifyOTPSchema), controller.verifyOTP);
 
 /**
  * @swagger
@@ -154,7 +167,7 @@ router.post("/update-location", authGuard, controller.updateLocation);
  * @swagger
  * /api/v1/user/login:
  *   post:
- *     summary: User login
+ *     summary: 👍 User login
  *     tags: [User]
  *     requestBody:
  *       required: true
@@ -183,7 +196,7 @@ router.post("/update-location", authGuard, controller.updateLocation);
  *       500:
  *         description: Server error
  */
-router.post("/login", controller.login);
+router.post("/login", validate(loginSchema), controller.login);
 
 // Password management
 /**
@@ -318,7 +331,7 @@ router.post("/reset-password", controller.resetPassword);
  * @swagger
  * /api/v1/user/me:
  *   get:
- *     summary: Get current user profile
+ *     summary: 👍 Get current user profile
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -336,7 +349,7 @@ router.get("/me", authGuard, controller.getMe);
  * @swagger
  * /api/v1/user/me:
  *   put:
- *     summary: Update current user profile
+ *     summary: 👍 Update current user profile
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -356,7 +369,7 @@ router.get("/me", authGuard, controller.getMe);
  *                 format: email
  *               phone:
  *                 type: string
- *               language:
+ *               lang:
  *                 type: string
  *                 enum: [ar, en]
  *               permission:
@@ -370,13 +383,13 @@ router.get("/me", authGuard, controller.getMe);
  *       500:
  *         description: Server error
  */
-router.put("/me", authGuard, controller.updateMe);
+router.put("/me", authGuard,validate(updateMeSchema) ,controller.updateMe);
 
 /**
  * @swagger
  * /api/v1/user/me:
  *   delete:
- *     summary: Delete current user account
+ *     summary: 👍 Delete current user account
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
