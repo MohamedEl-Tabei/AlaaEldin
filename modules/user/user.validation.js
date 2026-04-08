@@ -141,16 +141,61 @@ const loginSchema = Joi.object({
   email: emailValidation,
   password: passwordValidation,
 });
+const setUserPaternalSchema = Joi.object({
+  isPaternal: Joi.boolean().required(),
+});
 const updateMeSchema = Joi.object({
-  firstName: nameValidation("firstName"),
-  lastName: nameValidation("lastName"),
-  phone: egyptianPhoneValidation,
-  lang: languageValidation,
-  permission: permissionValidation,
+  firstName: nameValidation("firstName").optional(),
+  lastName: nameValidation("lastName").optional(),
+  phone: egyptianPhoneValidation.optional(),
+  lang: languageValidation.optional(),
+  permission: permissionValidation.optional(),
+});
+const updateUserByIdSchema = updateMeSchema;
+const updateLocationSchema = Joi.object({
+  governorateId: Joi.string().optional(),
+  areaId: Joi.string().optional(),
+  streetName: Joi.string().optional(),
+  apartment: Joi.string().optional(),
+  floorNumber: Joi.string().optional(),
+  buildingNumber: Joi.string().optional(),
+  additionalDetails: Joi.string().optional(""),
+});
+const changePasswordRequestSchema = Joi.object({
+  otp: otpCodeValidation,
+  newPassword: passwordValidation,
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("newPassword"))
+    .required()
+    .messages({
+      "any.only": "Confirm password must match password",
+      "any.required": "Confirm password is required",
+    }),
+});
+const forgotPasswordRequestSchema = Joi.object({
+  email: emailValidation,
+});
+const resetPasswordSchema = Joi.object({
+  email: emailValidation,
+  otp: otpCodeValidation,
+  newPassword: passwordValidation,
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("newPassword"))
+    .required()
+    .messages({
+      "any.only": "Confirm password must match password",
+      "any.required": "Confirm password is required",
+    }),
 });
 module.exports = {
   registerSchema,
   verifyOTPSchema,
   loginSchema,
   updateMeSchema,
+  setUserPaternalSchema,
+  updateLocationSchema,
+  changePasswordRequestSchema,
+  forgotPasswordRequestSchema,
+  resetPasswordSchema,
+  updateUserByIdSchema,
 };

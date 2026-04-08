@@ -1,13 +1,19 @@
 const express = require("express");
 const controller = require("./location.controller");
 const { authGuard } = require("../../shared/middlewares/auth.middleware");
+const validate = require("../../shared/middlewares/errorValidate.middleware");
+const {
+  createLocationSchema,
+  updateLocationSchema,
+} = require("./location.validation");
 const router = express.Router();
 
+// #region Create location
 /**
  * @swagger
  * /api/v1/location:
  *   post:
- *     summary: Create a new location
+ *     summary: 👍 Create a new location
  *     tags: [Location]
  *     security:
  *       - bearerAuth: []
@@ -49,13 +55,20 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", authGuard, controller.createLocation);
+// #endregion
+router.post(
+  "/",
+  authGuard,
+  validate(createLocationSchema),
+  controller.createLocation,
+);
 
+//#region Get all locations
 /**
  * @swagger
  * /api/v1/location:
  *   get:
- *     summary: Get all locations
+ *     summary: 👍 Get all locations
  *     tags: [Location]
  *     security:
  *       - bearerAuth: []
@@ -67,13 +80,15 @@ router.post("/", authGuard, controller.createLocation);
  *       500:
  *         description: Server error
  */
+// #endregion
 router.get("/", authGuard, controller.getLocations);
 
+//#region Get location by ID
 /**
  * @swagger
  * /api/v1/location/{id}:
  *   get:
- *     summary: Get location by ID
+ *     summary: 👍 Get location by ID
  *     tags: [Location]
  *     security:
  *       - bearerAuth: []
@@ -93,13 +108,15 @@ router.get("/", authGuard, controller.getLocations);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.get("/:id", authGuard, controller.getLocationById);
 
+// #region Update location by ID
 /**
  * @swagger
  * /api/v1/location/{id}:
  *   put:
- *     summary: Update location by ID
+ *     summary: 👍 Update location by ID
  *     tags: [Location]
  *     security:
  *       - bearerAuth: []
@@ -140,13 +157,20 @@ router.get("/:id", authGuard, controller.getLocationById);
  *       500:
  *         description: Server error
  */
-router.put("/:id", authGuard, controller.updateLocationById);
+// #endregion
+router.put(
+  "/:id",
+  authGuard,
+  validate(updateLocationSchema),
+  controller.updateLocationById,
+);
 
+// #region Delete location by ID
 /**
  * @swagger
  * /api/v1/location/{id}:
  *   delete:
- *     summary: Delete location by ID
+ *     summary: 👍 Delete location by ID
  *     tags: [Location]
  *     security:
  *       - bearerAuth: []
@@ -166,6 +190,7 @@ router.put("/:id", authGuard, controller.updateLocationById);
  *       500:
  *         description: Server error
  */
+// #endregion
 router.delete("/:id", authGuard, controller.deleteLocationById);
 
 module.exports = router;

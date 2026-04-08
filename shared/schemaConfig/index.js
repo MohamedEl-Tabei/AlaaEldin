@@ -47,7 +47,7 @@ const locationConfig = {
   ref: "Location",
 };
 
-const isPartnerConfig = {
+const isPaternalConfig = {
   type: Boolean,
   default: false,
 };
@@ -65,6 +65,6 @@ module.exports = {
   idNumberConfig,
   permissionConfig,
   locationConfig,
-  isPartnerConfig,
+  isPaternalConfig,
   isVerifiedConfig,
 };

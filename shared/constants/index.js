@@ -13,37 +13,7 @@ const LANGUAGES = Object.freeze({
   EN: "en",
   LIST: ["ar", "en"],
 });
-const GOVERNORATES = Object.freeze({
-  CAIRO: "Cairo",
-  GIZA: "Giza",
-  ALEXANDRIA: "Alexandria",
-  DAKAHLIA: "Dakahlia",
-  RED_SEA: "Red Sea",
-  BEHEIRA: "Beheira",
-  FAYOUM: "Fayoum",
-  GHARBIA: "Gharbia",
-  ISMAILIA: "Ismailia",
-  MENOFIA: "Menofia",
-  MINYA: "Minya",
-  QALYUBIA: "Qalyubia",
-  NEW_VALLEY: "New Valley",
-  SUEZ: "Suez",
-  ASWAN: "Aswan",
-  ASSIUT: "Assiut",
-  BENI_SUEF: "Beni Suef",
-  PORT_SAID: "Port Said",
-  DAMIETTA: "Damietta",
-  SHARKIA: "Sharkia",
-  SOUTH_SINAI: "South Sinai",
-  KAFR_EL_SHEIKH: "Kafr El Sheikh",
-  MATROUH: "Matrouh",
-  LUXOR: "Luxor",
-  QENA: "Qena",
-  NORTH_SINAI: "North Sinai",
-  SOHAG: "Sohag",
-});
 
-const GOVERNORATES_LIST = Object.values(GOVERNORATES);
 const STATUS_CODES = Object.freeze({
   OK: 200,
   CREATED: 201,
@@ -67,6 +37,4 @@ module.exports = {
   PERMISSIONS,
   LANGUAGES,
   STATUS_CODES,
-  GOVERNORATES,
-  GOVERNORATES_LIST
 };

@@ -8,7 +8,7 @@ const {
   idNumberConfig,
   permissionConfig,
   locationConfig,
-  isPartnerConfig,
+  isPaternalConfig,
   isVerifiedConfig,
 } = require("../../shared/schemaConfig");
 const userSchema = new mongoose.Schema({
@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   idNumber: { ...idNumberConfig },
   permission: { ...permissionConfig },
   location: { ...locationConfig },
-  isPartner: { ...isPartnerConfig },
+  isPaternal: { ...isPaternalConfig },
   isVerified: { ...isVerifiedConfig },
   profileImage: String,
   idImageFront: {

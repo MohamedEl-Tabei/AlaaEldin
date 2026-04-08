@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const errorFactory = require("../../shared/error/errorFactory");
 const crypto = require("crypto");
+const userService = require("./user.service");
 
 const register = async (req, res) => {
   //#region body
@@ -262,7 +263,7 @@ const getUserById = async (req, res) => {
 const updateUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = { ...req.body };
+    const updateData = { ...req.body, language: req.body.lang };
 
     if (updateData.password) {
       updateData.password = await bcrypt.hash(updateData.password, 10);
@@ -303,6 +304,7 @@ const updateMe = async (req, res) => {
   const updateData = {
     ...req.body,
     password: undefined,
+    language: req.body.lang,
   };
   // if (updateData.password) {
   //   updateData.password = await bcrypt.hash(updateData.password, 10);
@@ -457,6 +459,13 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
   res.status(200).json({ user: req.user });
 };
+const setUserPaternal = async (req, res) => {
+  const { isPaternal } = req.body;
+  await userService.setUserPaternal(isPaternal, req.user._id);
+  res
+    .status(200)
+    .json({ message: "User paternal status updated successfully" });
+};
 module.exports = {
   register,
   verifyOTP,
@@ -473,4 +482,5 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  setUserPaternal,
 };

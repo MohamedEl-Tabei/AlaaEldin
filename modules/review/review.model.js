@@ -4,6 +4,10 @@ const reviewSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
   },
+  reviewer:{
+    type: mongoose.Types.ObjectId,
+    ref: "User",
+  },
   stars: {
     type: Number,
     required: true,

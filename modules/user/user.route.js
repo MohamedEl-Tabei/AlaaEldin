@@ -8,9 +8,15 @@ const {
   verifyOTPSchema,
   loginSchema,
   updateMeSchema,
+  setUserPaternalSchema,
+  updateLocationSchema,
+  changePasswordRequestSchema,
+  forgotPasswordRequestSchema,
+  resetPasswordSchema,
+  updateUserByIdSchema,
 } = require("./user.validation.js");
 const router = express.Router();
-
+//#region Swagger registration
 /**
  * @swagger
  * /api/v1/user/register:
@@ -74,13 +80,14 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
+// #endregion
 router.post(
   "/register",
   uploadFields,
   validate(registerSchema),
   controller.register,
 );
-
+// #region OTP verification
 /**
  * @swagger
  * /api/v1/user/verify-otp:
@@ -110,13 +117,14 @@ router.post(
  *       500:
  *         description: Server error
  */
+//#endregion
 router.post("/verify-otp", validate(verifyOTPSchema), controller.verifyOTP);
-
+// #region Location update
 /**
  * @swagger
  * /api/v1/user/update-location:
  *   post:
- *     summary: Update user location
+ *     summary: 👍 Update user location
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -161,8 +169,14 @@ router.post("/verify-otp", validate(verifyOTPSchema), controller.verifyOTP);
  *       500:
  *         description: Server error
  */
-router.post("/update-location", authGuard, controller.updateLocation);
-
+//#endregion
+router.post(
+  "/update-location",
+  authGuard,
+  validate(updateLocationSchema),
+  controller.updateLocation,
+);
+// #region Login
 /**
  * @swagger
  * /api/v1/user/login:
@@ -184,6 +198,7 @@ router.post("/update-location", authGuard, controller.updateLocation);
  *                 format: email
  *               password:
  *                 type: string
+ *                 example: 12345Aa$
  *     responses:
  *       200:
  *         description: Login successful
@@ -196,14 +211,14 @@ router.post("/update-location", authGuard, controller.updateLocation);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.post("/login", validate(loginSchema), controller.login);
-
-// Password management
+// #region request otp for password change
 /**
  * @swagger
  * /api/v1/user/change-password-request:
  *   post:
- *     summary: Request OTP for password change
+ *     summary: 👍 Request OTP for password change
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -215,17 +230,18 @@ router.post("/login", validate(loginSchema), controller.login);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.post(
   "/change-password-request",
   authGuard,
   controller.requestChangePassword,
 );
-
+// #region change password with otp
 /**
  * @swagger
  * /api/v1/user/change-password:
  *   post:
- *     summary: Change password with OTP
+ *     summary: 👍 Change password with OTP
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -256,14 +272,19 @@ router.post(
  *       500:
  *         description: Server error
  */
-router.post("/change-password", authGuard, controller.changePassword);
-
-// Password reset for forgotten password
+//#endregion
+router.post(
+  "/change-password",
+  authGuard,
+  validate(changePasswordRequestSchema),
+  controller.changePassword,
+);
+// #region Password reset for forgotten password
 /**
  * @swagger
  * /api/v1/user/forgot-password:
  *   post:
- *     summary: Request password reset OTP
+ *     summary: 👍 Request password reset OTP
  *     tags: [User]
  *     requestBody:
  *       required: true
@@ -287,13 +308,18 @@ router.post("/change-password", authGuard, controller.changePassword);
  *       500:
  *         description: Server error
  */
-router.post("/forgot-password", controller.forgotPassword);
-
+//#endregion
+router.post(
+  "/forgot-password",
+  validate(forgotPasswordRequestSchema),
+  controller.forgotPassword,
+);
+// #region Reset password with OTP
 /**
  * @swagger
  * /api/v1/user/reset-password:
  *   post:
- *     summary: Reset password with OTP
+ *     summary: 👍 Reset password with OTP
  *     tags: [User]
  *     requestBody:
  *       required: true
@@ -324,9 +350,13 @@ router.post("/forgot-password", controller.forgotPassword);
  *       500:
  *         description: Server error
  */
-router.post("/reset-password", controller.resetPassword);
-
-// Protected routes
+// #endregion
+router.post(
+  "/reset-password",
+  validate(resetPasswordSchema),
+  controller.resetPassword,
+);
+//#region get my profile
 /**
  * @swagger
  * /api/v1/user/me:
@@ -343,8 +373,9 @@ router.post("/reset-password", controller.resetPassword);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.get("/me", authGuard, controller.getMe);
-
+//#region Update my profile
 /**
  * @swagger
  * /api/v1/user/me:
@@ -383,8 +414,10 @@ router.get("/me", authGuard, controller.getMe);
  *       500:
  *         description: Server error
  */
-router.put("/me", authGuard,validate(updateMeSchema) ,controller.updateMe);
+// #endregion
+router.put("/me", authGuard, validate(updateMeSchema), controller.updateMe);
 
+//#region Delete my account
 /**
  * @swagger
  * /api/v1/user/me:
@@ -401,13 +434,15 @@ router.put("/me", authGuard,validate(updateMeSchema) ,controller.updateMe);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.delete("/me", authGuard, controller.deleteMe);
 
+//#region Get all users
 /**
  * @swagger
  * /api/v1/user:
  *   get:
- *     summary: Get all users
+ *     summary: 👍 Get all users
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -419,13 +454,14 @@ router.delete("/me", authGuard, controller.deleteMe);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.get("/", authGuard, controller.getUsers);
-
+//#region Get user by ID
 /**
  * @swagger
  * /api/v1/user/{id}:
  *   get:
- *     summary: Get user by ID
+ *     summary: 👍 Get user by ID
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -445,13 +481,14 @@ router.get("/", authGuard, controller.getUsers);
  *       500:
  *         description: Server error
  */
+//#endregion
 router.get("/:id", authGuard, controller.getUserById);
-
+// #region Update user by ID
 /**
  * @swagger
  * /api/v1/user/{id}:
  *   put:
- *     summary: Update user by ID
+ *     summary: 👍 Update user by ID
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -472,19 +509,15 @@ router.get("/:id", authGuard, controller.getUserById);
  *                 type: string
  *               lastName:
  *                 type: string
- *               email:
- *                 type: string
- *                 format: email
+ *               
  *               phone:
  *                 type: string
- *               language:
+ *               lang:
  *                 type: string
  *                 enum: [ar, en]
  *               permission:
  *                 type: string
  *                 enum: [service, realEstate, marketplace, stores]
- *               password:
- *                 type: string
  *     responses:
  *       200:
  *         description: User updated successfully
@@ -495,13 +528,20 @@ router.get("/:id", authGuard, controller.getUserById);
  *       500:
  *         description: Server error
  */
-router.put("/:id", authGuard, controller.updateUserById);
+//#endregion
+router.put(
+  "/:id",
+  authGuard,
+  validate(updateUserByIdSchema),
+  controller.updateUserById,
+);
 
+//#region Delete user by ID
 /**
  * @swagger
  * /api/v1/user/{id}:
  *   delete:
- *     summary: Delete user by ID
+ *     summary: 👍 Delete user by ID
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -521,6 +561,43 @@ router.put("/:id", authGuard, controller.updateUserById);
  *       500:
  *         description: Server error
  */
+// #endregion
 router.delete("/:id", authGuard, controller.deleteUserById);
+
+//#region Set user paternal status
+/**
+ * @swagger
+ * /api/v1/user/set-paternal:
+ *   post:
+ *     summary: 👍 Set user paternal status
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isPaternal:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: User paternal status updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+//#endregion
+router.post(
+  "/set-paternal",
+  authGuard,
+  validate(setUserPaternalSchema),
+  controller.setUserPaternal,
+);
 
 module.exports = router;

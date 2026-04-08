@@ -2,7 +2,7 @@ const { STATUS_CODES } = require("../constants");
 const AppError = require("../error/appError");
 
 const errorMiddlware = (err, req, res, next) => {
-  console.log("Error: ", err);
+  console.log("Error: ", err.message);
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       errors: [
@@ -24,7 +24,14 @@ const errorMiddlware = (err, req, res, next) => {
       ],
     });
   }
-  res.status(500).json(err);
+  res.status(500).json({
+    errors: [
+      {
+        messages: "internal server error",
+        label: null,
+      },
+    ],
+  });
 };
 
 module.exports = errorMiddlware;
