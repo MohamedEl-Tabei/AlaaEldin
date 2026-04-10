@@ -38,7 +38,7 @@ app.get("/swagger.json", (req, res) => {
   res.send(swaggerSpec);
 });
 
-app.listen(process.env.PORT || 5000, () => {
-  console.log(`App running on port ${process.env.PORT || 5000}`);
-});
-// module.exports = app;
+// app.listen(process.env.PORT || 5000, () => {
+//   console.log(`App running on port ${process.env.PORT || 5000}`);
+// });
+module.exports = app;
