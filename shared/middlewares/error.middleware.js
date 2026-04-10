@@ -13,7 +13,7 @@ const errorMiddlware = (err, req, res, next) => {
       ],
     });
   }
-  if (err.code===11000 ||(err.codeName && err.codeName === "DuplicateKey")) {
+  if (err.code === 11000 || (err.codeName && err.codeName === "DuplicateKey")) {
     const label = Object.keys(err.keyValue)[0];
     return res.status(STATUS_CODES.CONFLICT).json({
       errors: [
@@ -24,6 +24,10 @@ const errorMiddlware = (err, req, res, next) => {
       ],
     });
   }
+  if (err.errors)
+    return res
+      .status(STATUS_CODES.BAD_REQUEST)
+      .json({ message: err.errors[Object.keys(err.errors)[0]].message });
   res.status(500).json({
     errors: [
       {

@@ -1,11 +1,13 @@
 const { LANGUAGES } = require("../../shared/constants");
 const errorFactory = require("../../shared/error/errorFactory");
+const { validateAndThrowIdHelper } = require("../../shared/helper");
 const governorateRepository = require("./governorate.repository");
 const GovernorateService = {
   async create(data) {
     return await governorateRepository.create(data);
   },
   async findById(id) {
+    validateAndThrowIdHelper(id);
     const governorate = await governorateRepository.findById(id);
     if (!governorate) errorFactory.notFound("Governorate not found");
     return governorate;

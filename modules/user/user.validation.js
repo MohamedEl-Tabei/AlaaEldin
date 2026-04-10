@@ -132,6 +132,13 @@ const registerSchema = Joi.object({
   idImageFront: imageValidation,
   idImageSelfie: imageValidation,
   profileImage: imageValidation,
+  governorateId: Joi.string().required(),
+  areaId: Joi.string().required(),
+  streetName: Joi.string().required().min(3).max(100),
+  apartment: Joi.string().required().min(1).max(10),
+  floorNumber: Joi.string().required().min(1).max(10),
+  buildingNumber: Joi.string().required().max(10).min(1),
+  additionalDetails: Joi.string().optional(),
 });
 const verifyOTPSchema = Joi.object({
   email: emailValidation,

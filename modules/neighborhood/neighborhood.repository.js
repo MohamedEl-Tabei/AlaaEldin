@@ -33,8 +33,13 @@ const getEnglishByGovernorateId = async (governorateId) => {
     },
   ]);
 };
+const getById = async (id) => {
+  return await Neighborhood.findById(id);
+};
+
 const NeighborhoodRepository = {
   getAll,
+  getById,
   getArabicByGovernorateId,
   getEnglishByGovernorateId,
 };
