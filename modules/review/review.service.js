@@ -5,16 +5,24 @@ const {
   calculateNewAVGRatingHelper,
   validateAndThrowIdHelper,
 } = require("../../shared/helper");
-const addToUser = async ({ userId, stars, feedback, details, reviewerId }) => {
+const addToUser = async ({
+  revieweeId,
+  stars,
+  feedback,
+  details,
+  reviewerId,
+}) => {
   //#region Validation
-  validateAndThrowIdHelper(userId, "User");
+  if (!revieweeId) errorFactory.badRequest("Reviewee ID is required");
 
-  if (reviewerId === userId)
+  validateAndThrowIdHelper(revieweeId, "Reviewee ID");
+
+  if (reviewerId === revieweeId)
     errorFactory.forbidden("You cannot review yourself");
-  const user = await userRepo.findById(userId);
+  const reviewee = await userRepo.findById(revieweeId);
 
-  if (!user) errorFactory.notFound();
-  if (!user.isPaternal)
+  if (!reviewee) errorFactory.notFound();
+  if (!reviewee.isPaternal)
     errorFactory.forbidden("You can only review paternal users");
   //#endregion
   //#region Create Review
@@ -23,18 +31,18 @@ const addToUser = async ({ userId, stars, feedback, details, reviewerId }) => {
     feedback,
     details,
     reviewer: reviewerId,
-    user: userId,
+    revieweeId: revieweeId,
   });
   //#endregion
   //#region Update User's Rating
   const avgRating = calculateNewAVGRatingHelper(
-    user.countReviews,
-    user.avgRating,
+    reviewee.countReviews,
+    reviewee.avgRating,
     review.stars,
   );
-  user.countReviews++;
-  user.avgRating = avgRating;
-  await user.save();
+  reviewee.countReviews++;
+  reviewee.avgRating = avgRating;
+  await reviewee.save();
   //#endregion
   return { avgRating };
 };

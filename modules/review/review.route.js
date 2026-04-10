@@ -7,10 +7,18 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/v1/review/add-to-user:
+ * /api/v1/review/{revieweeId}:
  *   post:
  *     summary: 👍 Add Review To User
  *     tags: [Review]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: revieweeId
+ *         schema:
+ *           type: string
+ *         description: The ID of the user being reviewed
  *     requestBody:
  *       required: true
  *       content:
@@ -18,9 +26,6 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               userId:
- *                 type: string
- *                 example: 64a7b2c9e1d3f2a5b6c7d8e
  *               stars:
  *                 type: number
  *                 example: 5
@@ -41,7 +46,10 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router
-  .route("/add-to-user")
-  .post(authGuard, validate(addToUserSchema), controller.addToUser);
+router.post(
+  "/:revieweeId",
+  authGuard,
+  validate(addToUserSchema),
+  controller.addToUser,
+);
 module.exports = router;
