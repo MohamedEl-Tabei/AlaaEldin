@@ -72,6 +72,27 @@ const router = express.Router();
  *               profileImage:
  *                 type: string
  *                 format: binary
+ *               governorateId:
+ *                 type: string
+ *                 example: 676ed79d469499c28eaccd9a
+ *               areaId:
+ *                 type: string
+ *                 example: 676ee7cc469499c28eaccdff
+ *               streetName:
+ *                 type: string
+ *                 example: 123 Main St
+ *               apartment:
+ *                 type: string
+ *                 example: Apt 4B
+ *               floorNumber:
+ *                 type: string
+ *                 example: 2
+ *               buildingNumber:
+ *                 type: string
+ *                 example: 10
+ *               additionalDetails:
+ *                 type: string
+ *                 example: Near the park
  *     responses:
  *       201:
  *         description: User registered successfully. OTP sent to email for verification.

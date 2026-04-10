@@ -1,6 +1,8 @@
 const userRepo = require("./user.repository");
 const locationRepo = require("../location/location.repository");
 const otpRepo = require("../../shared/otp/otp.repository");
+const governorateService = require("../governorate/governorate.service");
+const neighborhoodService = require("../neighborhood/neighborhood.service");
 const { uploadImage } = require("../../shared/services/imagekit.service");
 const { sendOTP } = require("../../shared/services/email.service");
 const bcrypt = require("bcrypt");
@@ -8,9 +10,17 @@ const jwt = require("jsonwebtoken");
 const errorFactory = require("../../shared/error/errorFactory");
 const crypto = require("crypto");
 const userService = require("./user.service");
-
 const register = async (req, res) => {
   //#region body
+  let {
+    governorateId,
+    areaId,
+    streetName,
+    apartment,
+    floorNumber,
+    buildingNumber,
+    additionalDetails,
+  } = req.body;
   let {
     firstName,
     lastName,
@@ -51,6 +61,18 @@ const register = async (req, res) => {
 
   const existingUser = await userRepo.findByEmail(email);
   if (existingUser) errorFactory.conflict("Email already exists", "email");
+
+  const governorate = await governorateService.findById(governorateId);
+  if (!governorate) errorFactory.notFound("Governorate not found");
+  const neighborhood = await neighborhoodService.findById(areaId);
+  if (!neighborhood) errorFactory.notFound("Neighborhood not found");
+  const isNeighborhoodInGovernorate =
+    neighborhood.governorateID.toString() === governorateId;
+  if (!isNeighborhoodInGovernorate)
+    errorFactory.badRequest(
+      "Neighborhood does not belong to the specified governorate",
+    );
+
   //#endregion
   //#region test
   if (req.files) {
@@ -157,6 +179,17 @@ const register = async (req, res) => {
     idImageSelfie: idImageSelfieUrl,
     isVerified: false,
   });
+  const location = await locationRepo.create({
+    governorateId,
+    areaId,
+    streetName,
+    apartment,
+    floorNumber,
+    buildingNumber,
+    additionalDetails,
+  });
+  user.location = location._id;
+  await user.save();
   //#endregion
   //#region Generate and send OTP
   await otpRepo.deleteByEmail(email);
@@ -355,7 +388,9 @@ const changePassword = async (req, res) => {
 
     const isSame = await bcrypt.compare(newPassword, user.password);
     if (isSame) {
-      return res.status(400).json({ message: "New password must be different" });
+      return res
+        .status(400)
+        .json({ message: "New password must be different" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -363,7 +398,6 @@ const changePassword = async (req, res) => {
     await userRepo.updateById(user._id, { password: hashedPassword });
 
     res.status(200).json({ message: "Password changed successfully" });
-
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ message: "Server error", error: error.message });

@@ -1,4 +1,5 @@
 const { LANGUAGES } = require("../../shared/constants");
+const { validateAndThrowIdHelper } = require("../../shared/helper");
 const neighborhoodRepository = require("./neighborhood.repository");
 const NeighborhoodService = {
   async findAll() {
@@ -9,5 +10,10 @@ const NeighborhoodService = {
       ? await neighborhoodRepository.getArabicByGovernorateId(governorateId)
       : await neighborhoodRepository.getEnglishByGovernorateId(governorateId);
   },
+  async findById(id) {
+    validateAndThrowIdHelper(id);
+    return await neighborhoodRepository.getById(id);
+  },
+ 
 };
 module.exports = NeighborhoodService;
