@@ -19,15 +19,19 @@ const errorMiddleware =require("./shared/middlewares/error.middleware")
 const app = express();
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODBURI, {
+(async ()=>{
+    try{
+        
+await mongoose.connect(process.env.MONGODBURI, {
     serverSelectionTimeoutMS: 5000,
     family: 4, // Force IPv4
 })
-    .then(() => console.log("Database connected"))
-    .catch((err) => {
+        console.log("Database connected")
+    }catch(err) {
         console.error("MongoDB connection error:", err.message);
-        process.exit(1);
-    });
+    };
+    
+})()
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
