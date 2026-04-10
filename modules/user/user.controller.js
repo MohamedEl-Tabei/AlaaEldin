@@ -26,7 +26,7 @@ const register = async (req, res) => {
 
   firstName = firstName?.trim();
   lastName = lastName?.trim();
-  email = email?.trim();
+  email = email?.trim().toLowerCase();
   password = password?.trim();
   confirmPassword = confirmPassword?.trim();
   phone = phone?.trim();
@@ -159,7 +159,8 @@ const register = async (req, res) => {
   });
   //#endregion
   //#region Generate and send OTP
-  const otp = crypto.randomInt(100000, 999999).toString();
+  await otpRepo.deleteByEmail(email);
+  const otp = crypto.randomInt(1000, 9999).toString();
   await otpRepo.create({ email, otp });
   await sendOTP(email, otp);
   //#endregion
@@ -172,7 +173,8 @@ const register = async (req, res) => {
 
 const verifyOTP = async (req, res) => {
   //#region body
-  const { email, otp } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
+  const otp = String(req.body.otp);
   //#endregion
   const otpRecord = await otpRepo.findByEmailAndOtp(email, otp);
   //#region  Validation
@@ -332,25 +334,11 @@ const deleteMe = async (req, res) => {
   }
 };
 
-const requestChangePassword = async (req, res) => {
-  try {
-    const otp = crypto.randomInt(100000, 999999).toString();
-    await otpRepo.create({ email: req.user.email, otp });
-    await sendOTP(req.user.email, otp);
-    res
-      .status(200)
-      .json({ message: "OTP sent to your email for password change" });
-  } catch (error) {
-    console.error("Request change password error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
 const changePassword = async (req, res) => {
   try {
-    const { otp, newPassword, confirmPassword } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (!otp || !newPassword || !confirmPassword) {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -358,16 +346,24 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const otpRecord = await otpRepo.findByEmailAndOtp(req.user.email, otp);
-    if (!otpRecord) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+    const user = await userRepo.findById(req.user._id);
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    const isSame = await bcrypt.compare(newPassword, user.password);
+    if (isSame) {
+      return res.status(400).json({ message: "New password must be different" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await userRepo.updateById(req.user._id, { password: hashedPassword });
-    await otpRepo.deleteByEmail(req.user.email);
+
+    await userRepo.updateById(user._id, { password: hashedPassword });
 
     res.status(200).json({ message: "Password changed successfully" });
+
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -376,7 +372,7 @@ const changePassword = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
@@ -387,7 +383,8 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp = crypto.randomInt(1000, 9999).toString();
+    await otpRepo.deleteByEmail(email);
     await otpRepo.create({ email, otp });
     await sendOTP(email, otp);
 
@@ -402,7 +399,9 @@ const forgotPassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { email, otp, newPassword, confirmPassword } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const otp = String(req.body.otp);
+    const { newPassword, confirmPassword } = req.body;
 
     if (!email || !otp || !newPassword || !confirmPassword) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -478,7 +477,7 @@ module.exports = {
   deleteUserById,
   updateMe,
   deleteMe,
-  requestChangePassword,
+  // requestChangePassword,
   changePassword,
   forgotPassword,
   resetPassword,
