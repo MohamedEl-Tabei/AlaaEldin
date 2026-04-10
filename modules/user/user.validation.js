@@ -114,7 +114,7 @@ const imageValidation = Joi.allow();
 //#region otpCode
 const otpCodeValidation = Joi.string()
   .required()
-  .length(6)
+  .length(4)
   .message("Invalid or expired OTP");
 //#endregion
 //#endregion
@@ -161,15 +161,15 @@ const updateLocationSchema = Joi.object({
   buildingNumber: Joi.string().optional(),
   additionalDetails: Joi.string().optional(""),
 });
-const changePasswordRequestSchema = Joi.object({
-  otp: otpCodeValidation,
+
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().required(),
   newPassword: passwordValidation,
   confirmPassword: Joi.string()
     .valid(Joi.ref("newPassword"))
     .required()
     .messages({
       "any.only": "Confirm password must match password",
-      "any.required": "Confirm password is required",
     }),
 });
 const forgotPasswordRequestSchema = Joi.object({
@@ -194,7 +194,7 @@ module.exports = {
   updateMeSchema,
   setUserPaternalSchema,
   updateLocationSchema,
-  changePasswordRequestSchema,
+  changePasswordSchema,
   forgotPasswordRequestSchema,
   resetPasswordSchema,
   updateUserByIdSchema,

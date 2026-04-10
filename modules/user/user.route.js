@@ -10,7 +10,7 @@ const {
   updateMeSchema,
   setUserPaternalSchema,
   updateLocationSchema,
-  changePasswordRequestSchema,
+  changePasswordSchema,
   forgotPasswordRequestSchema,
   resetPasswordSchema,
   updateUserByIdSchema,
@@ -215,33 +215,10 @@ router.post(
 router.post("/login", validate(loginSchema), controller.login);
 // #region request otp for password change
 /**
- * @swagger
- * /api/v1/user/change-password-request:
- *   post:
- *     summary: 👍 Request OTP for password change
- *     tags: [User]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: OTP sent to email
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Server error
- */
-//#endregion
-router.post(
-  "/change-password-request",
-  authGuard,
-  controller.requestChangePassword,
-);
-// #region change password with otp
-/**
- * @swagger
+* @swagger
  * /api/v1/user/change-password:
  *   post:
- *     summary: 👍 Change password with OTP
+ *     summary: 👍 Change password
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -252,16 +229,19 @@ router.post(
  *           schema:
  *             type: object
  *             required:
- *               - otp
+ *               - currentPassword
  *               - newPassword
  *               - confirmPassword
  *             properties:
- *               otp:
+ *               currentPassword:
  *                 type: string
+ *                 description: The user's current password
  *               newPassword:
  *                 type: string
+ *                 description: The new password
  *               confirmPassword:
  *                 type: string
+ *                 description: Confirmation of the new password
  *     responses:
  *       200:
  *         description: Password changed successfully
@@ -272,12 +252,13 @@ router.post(
  *       500:
  *         description: Server error
  */
+
 //#endregion
 router.post(
   "/change-password",
   authGuard,
-  validate(changePasswordRequestSchema),
-  controller.changePassword,
+  validate(changePasswordSchema),
+  controller.changePassword
 );
 // #region Password reset for forgotten password
 /**
@@ -509,7 +490,6 @@ router.get("/:id", authGuard, controller.getUserById);
  *                 type: string
  *               lastName:
  *                 type: string
- *               
  *               phone:
  *                 type: string
  *               lang:
