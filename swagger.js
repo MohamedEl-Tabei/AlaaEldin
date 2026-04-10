@@ -1,0 +1,37 @@
+const swaggerJSDoc = require("swagger-jsdoc");
+const path = require("path");
+// Swagger setup
+const swaggerOptions = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "AlaaEldin API",
+      version: "1.0.0",
+      description: "API documentation for AlaaEldin application",
+    },
+    servers: [
+      {
+        url: "http://localhost:5000",
+        description: "Development server",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+  apis: ["./modules/**/*.route.js", "./modules/**/*.controller.js"], // Paths to files containing OpenAPI definitions
+};
+
+const swaggerSpec = swaggerJSDoc(swaggerOptions);
+module.exports = swaggerSpec;
