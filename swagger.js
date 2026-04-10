@@ -28,11 +28,7 @@ const swaggerOptions = {
         },
       },
     },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
+    security: [],
   },
   apis: ["./modules/**/*.route.js", "./modules/**/*.controller.js"], // Paths to files containing OpenAPI definitions
 };

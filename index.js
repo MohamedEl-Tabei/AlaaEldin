@@ -13,10 +13,7 @@ const swaggerSpec = require("./swagger");
 
 (async () => {
   try {
-    await mongoose.connect(process.env.MONGODBURI, {
-      serverSelectionTimeoutMS: 5000,
-      family: 4, // Force IPv4
-    });
+    await mongoose.connect(process.env.MONGODBURI);
     console.log("Database connected");
   } catch (err) {
     console.error("MongoDB connection error:", err.message);
