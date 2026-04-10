@@ -13,7 +13,7 @@ const sendOTP = async (email, otp) => {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Your OTP Code",
-        text: `Your OTP code is: ${otp}. It expires in 10 minutes.`,
+        text: `Your 4-digit OTP code is: ${otp}. It expires in 10 minutes.`,
     };
 
     await transporter.sendMail(mailOptions);
