@@ -14,6 +14,10 @@ const swaggerOptions = {
         url: "http://localhost:5000",
         description: "Development server",
       },
+      {
+        url: "https://alaa-eldin.vercel.app",
+        description: "Production server",
+      },
     ],
     components: {
       securitySchemes: {
