@@ -2,7 +2,7 @@ const { STATUS_CODES } = require("../constants");
 const AppError = require("../error/appError");
 
 const errorMiddlware = (err, req, res, next) => {
-  console.log("Error: ", err.message);
+  console.log("Error: ", err);
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       errors: [
@@ -13,7 +13,7 @@ const errorMiddlware = (err, req, res, next) => {
       ],
     });
   }
-  if (err.codeName && err.codeName === "DuplicateKey") {
+  if (err.code===11000 ||(err.codeName && err.codeName === "DuplicateKey")) {
     const label = Object.keys(err.keyValue)[0];
     return res.status(STATUS_CODES.CONFLICT).json({
       errors: [

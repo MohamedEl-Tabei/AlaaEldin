@@ -4,6 +4,7 @@ const addToUser = async (req, res) => {
   const data = await service.addToUser({
     ...body,
     reviewerId: req.user._id.toString(),
+    revieweeId: req.params.revieweeId,
   });
   res.status(200).json(data);
 };

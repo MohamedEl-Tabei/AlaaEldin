@@ -19,5 +19,15 @@ const authGuard = async (req, res, next) => {
   req.user = user;
   next();
 };
+const adminGuard = async (req, res, next) => {
+  const user = req.user;
+  if (!user) {
+    errorFactory.unauthorized("No token provided");
+  }
+  if (!user.isAdmin) {
+    errorFactory.forbidden("Access denied");
+  }
+  next();
+};
 
-module.exports = { authGuard };
+module.exports = { authGuard, adminGuard };
