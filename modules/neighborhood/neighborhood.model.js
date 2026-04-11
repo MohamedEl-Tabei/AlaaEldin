@@ -16,10 +16,11 @@ const neighborhoodSchema = new mongoose.Schema({
     required: true,
   },
 });
-neighborhoodSchema.index({ governorateID: 1 });
 
-neighborhoodSchema.index({ nameAr: 1, governorateID: 1 }, { unique: true });
+neighborhoodSchema
+  .index({ nameAr: 1, governorateID: 1 }, { unique: true })
+  .index({ nameEn: 1, governorateID: 1 }, { unique: true })
+  .index({ governorateID: 1 });
 
-neighborhoodSchema.index({ nameEn: 1, governorateID: 1 }, { unique: true });
 const Neighborhood = mongoose.model("Neighborhood", neighborhoodSchema);
 module.exports = Neighborhood;

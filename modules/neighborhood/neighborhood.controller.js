@@ -1,6 +1,7 @@
 const { LANGUAGES } = require("../../shared/constants");
 const errorFactory = require("../../shared/error/errorFactory");
 const { validateAndThrowIdHelper } = require("../../shared/helper");
+const GovernorateService = require("../governorate/governorate.service");
 const neighborhoodService = require("./neighborhood.service");
 const findAll = async (req, res) => {
   const neighborhoods = await neighborhoodService.findAll();
@@ -20,8 +21,16 @@ const findByGovernorateIdAndLanguage = async (req, res) => {
     );
   res.json(neighborhoods);
 };
+const create=async (req,res)=>{
+  const {nameAr,nameEn}=req.body;
+  const {governorateID}=req.params;
+  await GovernorateService.findById(governorateID);
+  const data =await neighborhoodService.create({nameAr,nameEn,governorateID});
+  res.json(data)
+}
 const NeighborhoodController = {
   findAll,
   findByGovernorateIdAndLanguage,
+  create
 };
 module.exports = NeighborhoodController;
