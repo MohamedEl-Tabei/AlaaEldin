@@ -14,6 +14,13 @@ const NeighborhoodService = {
     validateAndThrowIdHelper(id);
     return await neighborhoodRepository.getById(id);
   },
- 
+  async create({ nameAr, nameEn, governorateID }) {
+    
+    return await neighborhoodRepository.create({
+      nameAr,
+      nameEn,
+      governorateID,
+    });
+  },
 };
 module.exports = NeighborhoodService;

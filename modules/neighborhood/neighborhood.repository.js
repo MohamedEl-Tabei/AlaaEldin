@@ -36,11 +36,16 @@ const getEnglishByGovernorateId = async (governorateId) => {
 const getById = async (id) => {
   return await Neighborhood.findById(id);
 };
-
+const create=async({nameAr,nameEn,governorateID})=>{
+  const neighborhood=new Neighborhood({nameAr,nameEn,governorateID})
+  await neighborhood.save();
+  return neighborhood;
+}
 const NeighborhoodRepository = {
   getAll,
   getById,
   getArabicByGovernorateId,
   getEnglishByGovernorateId,
+  create
 };
 module.exports = NeighborhoodRepository;
